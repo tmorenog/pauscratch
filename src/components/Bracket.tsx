@@ -15,9 +15,10 @@ interface Props {
       decidedBy?: DecidedBy | null;
     },
   ) => void;
+  onRandom: (id: string) => void;
 }
 
-export function Bracket({ matches, onUpdate }: Props) {
+export function Bracket({ matches, onUpdate, onRandom }: Props) {
   const r16 = matches.filter((m) => m.round === "round_of_16");
   const qf = matches.filter((m) => m.round === "quarterfinal");
   const sf = matches.filter((m) => m.round === "semifinal");
@@ -27,9 +28,24 @@ export function Bracket({ matches, onUpdate }: Props) {
   return (
     <div className="bracket-wrapper" aria-label="Tournament bracket">
       <div className="bracket">
-        <Column title={ROUND_LABELS.round_of_16} matches={r16} onUpdate={onUpdate} />
-        <Column title={ROUND_LABELS.quarterfinal} matches={qf} onUpdate={onUpdate} />
-        <Column title={ROUND_LABELS.semifinal} matches={sf} onUpdate={onUpdate} />
+        <Column
+          title={ROUND_LABELS.round_of_16}
+          matches={r16}
+          onUpdate={onUpdate}
+          onRandom={onRandom}
+        />
+        <Column
+          title={ROUND_LABELS.quarterfinal}
+          matches={qf}
+          onUpdate={onUpdate}
+          onRandom={onRandom}
+        />
+        <Column
+          title={ROUND_LABELS.semifinal}
+          matches={sf}
+          onUpdate={onUpdate}
+          onRandom={onRandom}
+        />
         <div className="round finals-column">
           <div className="round-title">Finals</div>
           {final ? (
@@ -43,6 +59,7 @@ export function Bracket({ matches, onUpdate }: Props) {
               <MatchCard
                 match={final}
                 onChange={(opts) => onUpdate(final.id, opts)}
+                onRandom={() => onRandom(final.id)}
               />
             </div>
           ) : null}
@@ -57,6 +74,7 @@ export function Bracket({ matches, onUpdate }: Props) {
               <MatchCard
                 match={tp}
                 onChange={(opts) => onUpdate(tp.id, opts)}
+                onRandom={() => onRandom(tp.id)}
               />
             </div>
           ) : null}
@@ -70,10 +88,12 @@ function Column({
   title,
   matches,
   onUpdate,
+  onRandom,
 }: {
   title: string;
   matches: Match[];
   onUpdate: Props["onUpdate"];
+  onRandom: Props["onRandom"];
 }) {
   return (
     <div className="round">
@@ -84,6 +104,7 @@ function Column({
             key={m.id}
             match={m}
             onChange={(opts) => onUpdate(m.id, opts)}
+            onRandom={() => onRandom(m.id)}
           />
         ))}
       </div>

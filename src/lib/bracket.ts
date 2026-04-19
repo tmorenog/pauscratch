@@ -241,3 +241,67 @@ export function roundProgress(matches: Match[]) {
     return { round, done, total: rm.length };
   });
 }
+
+/**
+ * Auto-fill the entire bracket with random plausible scores. Walks rounds in
+ * order so winners propagate forward as we go. Skips matches that already have
+ * a winner, so the user can keep their picks and only fill the rest.
+ */
+export function randomFill(matches: Match[], replaceExisting = false): Match[] {
+  let next = cloneMatches(matches);
+  for (const round of ROUND_ORDER) {
+    const inRound = next.filter((m) => m.round === round).map((m) => m.id);
+    for (const id of inRound) {
+      const m = findMatch(next, id);
+      if (!m || !m.team1 || !m.team2) continue;
+      if (!replaceExisting && m.winnerId) continue;
+      const s1 = randomScore();
+      let s2 = randomScore();
+      // 80% chance to avoid a tie so the random pick feels decisive
+      if (s1 === s2 && Math.random() < 0.8) {
+        s2 = s1 + (Math.random() < 0.5 ? 1 : -1);
+        if (s2 < 0) s2 = s1 + 1;
+      }
+      const tiebreakWinnerSlot: MatchSlot | undefined =
+        s1 === s2 ? (Math.random() < 0.5 ? "team1" : "team2") : undefined;
+      next = setMatchResult(next, id, {
+        score1: s1,
+        score2: s2,
+        tiebreakWinnerSlot,
+        decidedBy: tiebreakWinnerSlot ? "penalties" : undefined,
+      });
+    }
+  }
+  return next;
+}
+
+function randomScore(): number {
+  // Weighted toward 0–3, occasional blowout
+  const r = Math.random();
+  if (r < 0.18) return 0;
+  if (r < 0.45) return 1;
+  if (r < 0.72) return 2;
+  if (r < 0.88) return 3;
+  if (r < 0.97) return 4;
+  return 5;
+}
+
+/** Random pick for a single match (used by the per-card 🎲 button). */
+export function randomPick(matches: Match[], matchId: string): Match[] {
+  const m = findMatch(matches, matchId);
+  if (!m || !m.team1 || !m.team2) return matches;
+  const s1 = randomScore();
+  let s2 = randomScore();
+  if (s1 === s2 && Math.random() < 0.8) {
+    s2 = s1 + (Math.random() < 0.5 ? 1 : -1);
+    if (s2 < 0) s2 = s1 + 1;
+  }
+  const tiebreakWinnerSlot: MatchSlot | undefined =
+    s1 === s2 ? (Math.random() < 0.5 ? "team1" : "team2") : undefined;
+  return setMatchResult(matches, matchId, {
+    score1: s1,
+    score2: s2,
+    tiebreakWinnerSlot,
+    decidedBy: tiebreakWinnerSlot ? "penalties" : undefined,
+  });
+}

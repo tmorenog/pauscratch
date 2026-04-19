@@ -14,6 +14,7 @@ interface Props {
       decidedBy?: DecidedBy | null;
     },
   ) => void;
+  onRandom: () => void;
 }
 
 function parseScore(raw: string): number | null {
@@ -44,6 +45,7 @@ function TeamRow({
     () => `score-${Math.random().toString(36).slice(2, 9)}`,
     [],
   );
+  const current = score ?? 0;
   return (
     <div
       className={`team-row ${isWinner ? "winner" : ""} ${isLoser ? "loser" : ""}`}
@@ -62,25 +64,48 @@ function TeamRow({
           <span className="label">TBD</span>
         )}
       </div>
-      <label htmlFor={inputId} style={{ display: "none" }}>
-        {`${label} score`}
-      </label>
-      <input
-        id={inputId}
-        className="score-input"
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={score ?? ""}
-        disabled={disabled}
-        aria-label={`${team?.name ?? label} score`}
-        onChange={(e) => onScoreChange(parseScore(e.target.value))}
-      />
+      <div className="score-controls">
+        <button
+          type="button"
+          className="score-step"
+          aria-label={`Decrease ${team?.name ?? label} score`}
+          disabled={disabled || current <= 0}
+          onClick={() => onScoreChange(Math.max(0, current - 1))}
+        >
+          −
+        </button>
+        <label htmlFor={inputId} style={{ display: "none" }}>
+          {`${label} score`}
+        </label>
+        <input
+          id={inputId}
+          className="score-input"
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={score ?? ""}
+          disabled={disabled}
+          aria-label={`${team?.name ?? label} score`}
+          onChange={(e) => onScoreChange(parseScore(e.target.value))}
+        />
+        <button
+          type="button"
+          className="score-step"
+          aria-label={`Increase ${team?.name ?? label} score`}
+          disabled={disabled}
+          onClick={() => {
+            const next = (score ?? 0) + 1;
+            onScoreChange(next);
+          }}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
 
-export function MatchCard({ match, onChange }: Props) {
+export function MatchCard({ match, onChange, onRandom }: Props) {
   const { team1, team2, score1, score2, winnerId, loserId } = match;
   const disabled = !team1 || !team2;
   const tied =
@@ -116,7 +141,19 @@ export function MatchCard({ match, onChange }: Props) {
         <span className="num">
           {shortRound(match.round)} · #{match.matchNumber}
         </span>
-        {match.date ? <span>{match.date}</span> : null}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {match.date ? <span>{match.date}</span> : null}
+          <button
+            type="button"
+            className="dice-btn"
+            onClick={onRandom}
+            disabled={disabled}
+            aria-label="Pick a random winner"
+            title="Pick a random winner"
+          >
+            🎲
+          </button>
+        </div>
       </div>
 
       <TeamRow
@@ -203,10 +240,10 @@ export function MatchCard({ match, onChange }: Props) {
         </span>
         {complete && decidedByLabel ? (
           <span className="match-winner-tag extra">
-            {winningTeamName} wins {decidedByLabel}
+            {winningTeamName} wins {decidedByLabel} 🎉
           </span>
         ) : complete ? (
-          <span className="match-winner-tag">{winningTeamName} advances</span>
+          <span className="match-winner-tag">{winningTeamName} advances ⚽</span>
         ) : null}
       </div>
     </div>

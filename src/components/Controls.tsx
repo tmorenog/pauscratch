@@ -7,10 +7,18 @@ interface Props {
   onExport: () => string;
   onImport: (json: string) => boolean;
   onPrint: () => void;
+  onSurpriseAll: () => void;
 }
 
-export function Controls({ onReset, onExport, onImport, onPrint }: Props) {
+export function Controls({
+  onReset,
+  onExport,
+  onImport,
+  onPrint,
+  onSurpriseAll,
+}: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showSurpriseConfirm, setShowSurpriseConfirm] = useState(false);
   const [importMessage, setImportMessage] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +46,14 @@ export function Controls({ onReset, onExport, onImport, onPrint }: Props) {
 
   return (
     <div className="controls" aria-label="Bracket controls">
+      <button
+        type="button"
+        className="btn btn-sm"
+        onClick={() => setShowSurpriseConfirm(true)}
+        title="Re-roll the entire bracket with random scores"
+      >
+        🎲 Re-roll everything
+      </button>
       <button
         type="button"
         className="btn btn-danger btn-sm"
@@ -69,6 +85,45 @@ export function Controls({ onReset, onExport, onImport, onPrint }: Props) {
         <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
           {importMessage}
         </span>
+      ) : null}
+
+      {showSurpriseConfirm ? (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="surprise-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowSurpriseConfirm(false);
+          }}
+        >
+          <div className="modal">
+            <h3 id="surprise-title">Re-roll the whole bracket? 🎲</h3>
+            <p>
+              This will replace every existing pick with a random result. Your
+              current bracket will be lost.
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setShowSurpriseConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  onSurpriseAll();
+                  setShowSurpriseConfirm(false);
+                }}
+              >
+                Yes, surprise me!
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {showConfirm ? (

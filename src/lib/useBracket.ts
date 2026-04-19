@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   getInitialMatches,
+  randomFill,
+  randomPick,
   resetAll,
   setMatchResult,
   type SetResultOptions,
@@ -71,5 +73,22 @@ export function useBracket() {
 
   const exportJSON = useCallback(() => JSON.stringify(matches, null, 2), [matches]);
 
-  return { matches, hydrated, updateMatch, reset, importJSON, exportJSON };
+  const surpriseMe = useCallback((replaceExisting = false) => {
+    setMatches((prev) => randomFill(prev, replaceExisting));
+  }, []);
+
+  const pickRandom = useCallback((matchId: string) => {
+    setMatches((prev) => randomPick(prev, matchId));
+  }, []);
+
+  return {
+    matches,
+    hydrated,
+    updateMatch,
+    reset,
+    importJSON,
+    exportJSON,
+    surpriseMe,
+    pickRandom,
+  };
 }

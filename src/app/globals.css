@@ -56,6 +56,25 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bg-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.10), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.10), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(234, 179, 8, 0.08), transparent 50%);
+}
+.dark .bg-pattern {
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(96, 165, 250, 0.10), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.10), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(250, 204, 21, 0.05), transparent 50%);
 }
 
 button {
@@ -107,6 +126,20 @@ a {
   background-clip: text;
   color: transparent;
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.title-ball {
+  display: inline-block;
+  font-size: 1em;
+  -webkit-text-fill-color: initial;
+  animation: spin 6s linear infinite;
+  transform-origin: center;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .header .tagline {
@@ -161,6 +194,44 @@ a {
 .btn-sm {
   padding: 4px 10px;
   font-size: 13px;
+}
+
+.surprise-btn {
+  background: linear-gradient(90deg, var(--accent), #a855f7 70%, #ec4899);
+  border: none;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(168, 85, 247, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.surprise-btn:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 10px 22px rgba(168, 85, 247, 0.45);
+}
+.surprise-btn:active {
+  transform: scale(0.98);
+}
+
+.dice-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.2s ease, background 0.15s ease;
+}
+.dice-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
+  transform: rotate(15deg) scale(1.1);
+}
+.dice-btn:active:not(:disabled) {
+  transform: rotate(360deg) scale(1.2);
+  transition: transform 0.4s ease;
+}
+.dice-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 /* ----- Progress ----- */
@@ -225,7 +296,14 @@ a {
   color: #fff6d8;
 }
 .champion .trophy {
-  font-size: 42px;
+  font-size: 48px;
+  display: inline-block;
+  animation: trophy-bounce 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+@keyframes trophy-bounce {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-6px) rotate(4deg); }
 }
 .champion .label {
   font-size: 12px;
@@ -328,13 +406,46 @@ a {
 }
 .team-row {
   display: grid;
-  grid-template-columns: 1fr 54px;
+  grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
   padding: 6px 8px;
   border-radius: 8px;
   background: var(--bg-muted);
   border: 1px solid transparent;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.score-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.score-step {
+  width: 22px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, transform 0.05s;
+}
+.score-step:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.score-step:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.score-step:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 .team-row.winner {
   background: var(--success-soft);
