@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bracket } from "@/components/Bracket";
 import { Champion } from "@/components/Champion";
+import { CompareModal } from "@/components/CompareModal";
 import { Confetti } from "@/components/Confetti";
 import { Controls } from "@/components/Controls";
+import { ProfileBar } from "@/components/ProfileBar";
+import { ProfileEditor } from "@/components/ProfileEditor";
 import { Progress } from "@/components/Progress";
+import { ShareModal } from "@/components/ShareModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   getChampion,
@@ -21,6 +25,7 @@ const TAGLINES = [
   "Goals, glory, and a few penalty shootouts. 🥅",
   "Build your dream bracket, one match at a time. ✨",
   "Upsets welcome. Nothing is decided until the final whistle. 🔔",
+  "The whole family can play. Pick yours, compare, and trash-talk. 🎯",
 ];
 
 export default function HomePage() {
@@ -33,6 +38,16 @@ export default function HomePage() {
     exportJSON,
     surpriseMe,
     pickRandom,
+    profiles,
+    activeProfile,
+    switchProfile,
+    addProfile,
+    renameProfile,
+    deleteProfile,
+    buildShareUrl,
+    pendingShare,
+    acceptShared,
+    dismissShared,
   } = useBracket();
 
   const champion = useMemo(() => getChampion(matches), [matches]);
@@ -45,12 +60,20 @@ export default function HomePage() {
     setTagline(TAGLINES[Math.floor(Math.random() * TAGLINES.length)]);
   }, []);
 
-  // Re-trigger confetti every time the champion id changes to a non-null value.
-  const championId = champion?.id ?? null;
+  const championKey = champion ? `${activeProfile.id}:${champion.id}` : null;
   const [confettiKey, setConfettiKey] = useState<string | null>(null);
   useEffect(() => {
-    if (championId) setConfettiKey(`${championId}-${Date.now()}`);
-  }, [championId]);
+    if (championKey) setConfettiKey(`${championKey}-${Date.now()}`);
+  }, [championKey]);
+
+  const [showCompare, setShowCompare] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [showImportShared, setShowImportShared] = useState(false);
+
+  // When a shared bracket is detected on first load, prompt to import.
+  useEffect(() => {
+    if (pendingShare) setShowImportShared(true);
+  }, [pendingShare]);
 
   return (
     <main className="page">
@@ -75,9 +98,31 @@ export default function HomePage() {
           >
             ✨ Surprise Me!
           </button>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => setShareUrl(buildShareUrl())}
+            title="Copy a shareable link to this bracket"
+          >
+            📤 Share
+          </button>
           <ThemeToggle />
         </div>
       </header>
+
+      {hydrated ? (
+        <ProfileBar
+          profiles={profiles}
+          activeId={activeProfile.id}
+          onSwitch={switchProfile}
+          onAdd={(name, avatar, color, seed) =>
+            addProfile(name, avatar, color, seed)
+          }
+          onRename={renameProfile}
+          onDelete={deleteProfile}
+          onCompare={() => setShowCompare(true)}
+        />
+      ) : null}
 
       <Progress progress={progress} />
 
@@ -85,6 +130,8 @@ export default function HomePage() {
         champion={champion}
         runnerUp={runnerUp}
         thirdPlace={thirdPlace}
+        playerName={activeProfile?.name}
+        playerAvatar={activeProfile?.avatar}
       />
 
       {hydrated ? (
@@ -122,23 +169,30 @@ export default function HomePage() {
         <h2>How it works</h2>
         <ul>
           <li>
-            Pick match results to advance teams through the bracket. Type the
-            score, tap <strong>+ / −</strong>, or hit <strong>🎲</strong> to
-            roll a random winner.
+            Each player can have <strong>their own bracket</strong>. Add
+            mom, dad, brother, friends — pick an avatar and a team color.
+          </li>
+          <li>
+            Pick match results to advance teams. Type the score, tap{" "}
+            <strong>+ / −</strong>, or hit <strong>🎲</strong> to roll a
+            random winner.
           </li>
           <li>
             If a knockout game is tied, choose the winner after{" "}
             <strong>extra time</strong> or <strong>penalties</strong>.
           </li>
           <li>
-            Press <strong>✨ Surprise Me!</strong> in the header to auto-fill
-            any matches that don&rsquo;t have a winner yet.
+            Press <strong>👀 Compare</strong> to see everyone&rsquo;s podium
+            picks side-by-side.
           </li>
           <li>
-            Winners move up automatically. If you change an earlier result,
-            later rounds are recalculated and cleared where needed.
+            Press <strong>📤 Share</strong> to copy a link — anyone who opens
+            it can save your bracket as their own and tweak it.
           </li>
-          <li>Results are saved in your browser, so you can come back later.</li>
+          <li>
+            Hit <strong>✨ Surprise Me!</strong> to auto-fill any missing
+            picks. Everything is saved in your browser.
+          </li>
         </ul>
       </section>
 
@@ -150,10 +204,37 @@ export default function HomePage() {
           fontSize: 13,
         }}
       >
-        Built with Next.js · Deploys to Vercel · Made for Pau 🏆
+        Built with Next.js · Deploys to Vercel · Made for the whole family 🏆
       </footer>
 
       <Confetti trigger={confettiKey} />
+
+      {showCompare ? (
+        <CompareModal
+          profiles={profiles}
+          activeId={activeProfile.id}
+          onClose={() => setShowCompare(false)}
+        />
+      ) : null}
+
+      {shareUrl ? (
+        <ShareModal url={shareUrl} onClose={() => setShareUrl(null)} />
+      ) : null}
+
+      {showImportShared && pendingShare ? (
+        <ProfileEditor
+          title="Save this shared bracket?"
+          submitLabel="Save as new player"
+          onCancel={() => {
+            setShowImportShared(false);
+            dismissShared();
+          }}
+          onSubmit={({ name, avatar, color }) => {
+            acceptShared(name || "Shared", avatar, color);
+            setShowImportShared(false);
+          }}
+        />
+      ) : null}
     </main>
   );
 }

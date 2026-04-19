@@ -66,3 +66,35 @@ export interface TournamentData {
   name: string;
   matches: Match[];
 }
+
+export interface BracketProfile {
+  id: string;
+  name: string;
+  avatar: string; // emoji
+  color: string;  // hex string used as accent
+  matches: Match[];
+  createdAt: number;
+}
+
+export interface AppState {
+  version: 2;
+  activeProfileId: string;
+  profiles: BracketProfile[];
+}
+
+export const AVATAR_OPTIONS = [
+  "⚽", "🏆", "🦁", "🐯", "🐉", "🦅", "🐺", "🦊",
+  "🐼", "🐸", "🦄", "🐙", "🦖", "🐝", "🌟", "⚡",
+  "🔥", "🚀", "💎", "🎯", "🎮", "🎸", "🎲", "🍕",
+];
+
+export const PROFILE_COLORS = [
+  "#2563eb", // blue
+  "#a855f7", // purple
+  "#ec4899", // pink
+  "#16a34a", // green
+  "#f97316", // orange
+  "#06b6d4", // cyan
+  "#eab308", // gold
+  "#dc2626", // red
+];

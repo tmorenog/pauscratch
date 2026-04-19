@@ -8,13 +8,20 @@ deploy on **Vercel**.
 
 ## Features
 
+- **Multi-player profiles** — every member of the family (or group of
+  friends) gets their own bracket, avatar emoji, and team color
+- **Compare view** — see everyone&rsquo;s podium picks side-by-side
+- **Shareable links** — copy a bracket URL; whoever opens it can save it
+  as a new player and tweak it
+- **Surprise Me!** auto-fills empty matches; per-match 🎲 button picks one
 - Full knockout bracket: Round of 16 → Quarterfinals → Semifinals →
   Third-place match → Final
-- Editable scores per match with automatic winner detection
+- Editable scores with automatic winner detection plus + / − step buttons
 - Tiebreakers for tied games: choose winner after extra time or penalties
 - Automatic advancement — winners populate the next round immediately
 - Re-propagation: editing an earlier result clears invalid later results
-- Champion, runner-up, and third-place podium display with trophy
+- Champion, runner-up, and third-place podium with bouncing trophy +
+  on-screen confetti
 - Round-by-round progress indicator
 - Stadium, city, country, and date shown on every match card
 - Reset everything (with confirmation), plus JSON export/import
